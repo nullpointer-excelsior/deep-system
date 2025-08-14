@@ -1,4 +1,4 @@
-from deepsystem.config import config
+from config import config
 from dataclasses import dataclass
 import platform
 import os 
@@ -9,6 +9,14 @@ class SystemSummary:
     kernel: str
     cwd: str
     home: str
+
+    def summary(self):
+        return f"""
+        - OS: {self.os}
+        - Kernel: {self.kernel}
+        - Current Working Directory: {self.cwd}
+        - Home Directory: {self.home}
+        """
 
 def get_system_summary() -> SystemSummary:
     system_name = platform.system()
