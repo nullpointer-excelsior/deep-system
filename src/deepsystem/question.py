@@ -1,6 +1,7 @@
 from system import SystemSummary, system_summary
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage
+from langchain.chat_models import init_chat_model
 
 
 system_prompt = """
@@ -23,3 +24,12 @@ prompt_template = ChatPromptTemplate([
     MessagesPlaceholder("messages")
 ])
 
+
+llm = init_chat_model("gpt-4.1-nano-2025-04-14", model_provider="openai")
+question_model = prompt_template | llm
+
+messages = [
+    HumanMessage(content="como instalo bat")
+]
+for chunk in question_model.stream({ "messages": messages, "system_summary": system_summary.summary() }):
+    print(chunk.content, end="", flush=True)
