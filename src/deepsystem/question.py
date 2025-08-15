@@ -1,12 +1,14 @@
 from system import system_summary
+from config import config
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.chat_models import init_chat_model
 from typing import Sequence
-from langchain_core.messages import HumanMessage, BaseMessage
+from langchain_core.messages import HumanMessage, BaseMessage, AIMessage
 from langgraph.graph.message import add_messages
-from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, END, StateGraph
 from typing_extensions import Annotated, TypedDict
+import sqlite3
+from langgraph.checkpoint.sqlite import SqliteSaver
 
 system_prompt = """
 Eres un asistente especializado en sistemas operativos Linux, Bash scripting, programación en general, DevOps, y seguridad informática ofensiva y defensiva, así como en mejores prácticas en administración de sistemas y DevOps.
@@ -36,8 +38,6 @@ question_model = prompt_template | llm
 messages = [
     HumanMessage(content="como instalo bat")
 ]
-# for chunk in question_model.stream({ "messages": messages, "system_summary": system_summary.summary() }):
-#     print(chunk.content, end="", flush=True)
 
 
 class Options(TypedDict):
@@ -66,25 +66,46 @@ def system_summary_node(state: InputState) -> State:
     }
 
 
-def model_call_node(state: State) -> OutputState:
+def model_call_node(state: State) -> State:
     answer = ''
     for chunk in question_model.stream(state):
         print(chunk.content, end="", flush=True)
         answer += chunk.content
+    # answer = question_model.invoke(state).content
     return {
-        "answer": answer
+        "messages": AIMessage(content=answer)
     }
 
+
+def output_node(state: State) -> OutputState:
+    return {
+        "answer": state["messages"][-1].content   
+    }
+
+
 def build_agent():
+
+    conn = sqlite3.connect(config.database_path, check_same_thread=False)
+    checkpointer = SqliteSaver(conn)
+
     builder = StateGraph(state_schema=State, input_schema=InputState, output_schema=OutputState)
+    
     builder.add_node("system_summary", system_summary_node)
     builder.add_node("model_call", model_call_node)
+    builder.add_node("output", output_node)
     builder.add_edge(START, "system_summary")
     builder.add_edge("system_summary", "model_call")
-    builder.add_edge("model_call", END)
-    return builder.compile()
+    builder.add_edge("model_call", "output")
+    builder.add_edge("output", END)
+    
+    return builder.compile(checkpointer=checkpointer)
 
 graph = build_agent()
-res = graph.invoke({ "question": "que sistema operativo es este?"})
 
-print(res)
+
+def invoke(question, **kwargs):
+    graph_config = {"configurable": {"thread_id": system_summary.cwd }}
+    res = graph.invoke(
+        {"question": question},
+        graph_config
+    )
