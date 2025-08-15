@@ -30,8 +30,10 @@ prompt_template = ChatPromptTemplate([
     MessagesPlaceholder("messages")
 ])
 
-deepsystem_config = get_configuration()
-llm = init_chat_model(f"openai:{deepsystem_config.model}")
+config = get_configuration()
+model = config['ai']['model']['selected']
+
+llm = init_chat_model(f"openai:{model}")
 
 question_model = prompt_template | llm
 

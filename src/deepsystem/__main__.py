@@ -1,17 +1,14 @@
 import click
-from commands import question, clean
+from commands import question, clean, model
 
 
 @click.group(help='OS Agent system')
-@click.option('--model', '-m', default=None, help='OpenAI model to use')
-@click.pass_context
-def cli(ctx, model):
-    ctx.ensure_object(dict)
-    ctx.obj["model"] = model
-    print(f"using: {model}")
+def cli():
+    pass
 
 
 cli.add_command(question)
 cli.add_command(clean)
+cli.add_command(model)
 
 cli()

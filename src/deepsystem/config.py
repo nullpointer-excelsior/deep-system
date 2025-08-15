@@ -1,56 +1,80 @@
-import tomllib
+import toml
 from pathlib import Path
 from dataclasses import dataclass, field
-import textwrap
+from typing import TypedDict, List
+from system import FzfCommand
 
-@dataclass
-class DeepSystemConfig:
-    """Configuration class for the DeepSystem application."""
-    llm_provider: str = 'openai'
-    model: str = ''
-    model_options: list = field(default_factory=list)
-    database_path: str = ''
+CONFIG_DIR = Path.home() / '.config' / 'deepsystem'
+CONFIG_FILEPATH = CONFIG_DIR / 'config.toml'
+DATABASE_FILEPATH = CONFIG_DIR / 'database.sqlite'
 
-def get_configuration() -> DeepSystemConfig:
+
+class AIModelConfig(TypedDict):
+    selected: str
+    choices: List[str]
+
+
+class AIConfig(TypedDict):
+    provider: str
+    model: AIModelConfig
+
+
+class DatabaseConfig(TypedDict):
+    path: str
+
+
+class DeepSystemConfiguration(TypedDict):
+    ai: AIConfig
+    database: DatabaseConfig
+
+
+def get_configuration() -> DeepSystemConfiguration:
     """
     Loads configuration from a TOML file. If the file does not exist,
     it is created with a default configuration and then read.
     """
-    config_path = Path.home() / '.config' / 'deepsystem' / 'config.toml'
-    database_path = Path.home() / '.config' / 'deepsystem' / 'database.sqlite'
-    default_config_content = textwrap.dedent(f"""
-        [ai]
-        provider = "openai"
 
-        [ai.model]
-        name = "gpt-4.1-nano"
-        options = ["gpt-4.1-nano", "gpt-4.1-mini", "gpt-4.1"]
+    # Ensure the config directory exists
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
-        [database]
-        path = "{database_path}"
-    """).lstrip()
+    # Define the default configuration data
+    default_config_data: DeepSystemConfiguration = {
+        'ai': {
+            'provider': 'openai',
+            'model': {
+                'selected': 'gpt-4.1-nano',
+                'choices': ["gpt-4.1-nano", "gpt-4.1-mini", "gpt-4.1", "gpt-5-nano", "gpt-5", "gpt-5-mini", "o3", "o3-mini", "o4-mini"]
+            }
+        },
+        'database': {
+            'path': str(DATABASE_FILEPATH)
+        }
+    }
 
-    if not config_path.exists():
-        config_path.parent.mkdir(parents=True, exist_ok=True)
-        config_path.write_text(default_config_content)
-
-    if not database_path.exists():
-        database_path.parent.mkdir(parents=True, exist_ok=True)
-        database_path.write_text("")
-
-    with config_path.open('rb') as f:
-        config_data = tomllib.load(f)
+    # Write the default config only if the file doesn't exist
+    if not CONFIG_FILEPATH.exists():
+        with CONFIG_FILEPATH.open('w') as f:
+            toml.dump(default_config_data, f)
     
-    # Check if the main section exists, otherwise return a default config
-    ai_section = config_data.get('ai', {})
-    model_section = config_data.get('ai', {}).get('model', {})
-    database_section = config_data.get('database', {})
+    # Create the database file if it doesn't exist
+    if not DATABASE_FILEPATH.exists():
+        DATABASE_FILEPATH.touch()
 
-    return DeepSystemConfig(
-        llm_provider=ai_section.get('provider', 'openai'),
-        model=model_section.get('name', ''),
-        model_options=model_section.get('options', []),
-        database_path=database_section.get('path', '')
-    )
+    # Load the configuration from the TOML file
+    with CONFIG_FILEPATH.open('r') as f:
+        config_data = toml.load(f)
+    
+    return config_data
 
-config = get_configuration()
+
+def update_ai_model():
+    config = get_configuration()
+    selected = FzfCommand([]).input_values(config['ai']['model']['choices'])
+    if selected:
+        config['ai']['model']['selected'] = selected
+        with open(CONFIG_FILEPATH, 'w') as f:
+            toml.dump(config, f)
+
+
+
+
