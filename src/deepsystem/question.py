@@ -81,23 +81,18 @@ def output_node(state: State) -> OutputState:
     }
 
 
+checkpointer = create_checkpointer()
+builder = StateGraph(state_schema=State, input_schema=InputState, output_schema=OutputState)
 
-def build_agent():
+builder.add_node("system_summary", system_summary_node)
+builder.add_node("model_call", model_call_node)
+builder.add_node("output", output_node)
+builder.add_edge(START, "system_summary")
+builder.add_edge("system_summary", "model_call")
+builder.add_edge("model_call", "output")
+builder.add_edge("output", END)
 
-    checkpointer = create_checkpointer()
-    builder = StateGraph(state_schema=State, input_schema=InputState, output_schema=OutputState)
-    
-    builder.add_node("system_summary", system_summary_node)
-    builder.add_node("model_call", model_call_node)
-    builder.add_node("output", output_node)
-    builder.add_edge(START, "system_summary")
-    builder.add_edge("system_summary", "model_call")
-    builder.add_edge("model_call", "output")
-    builder.add_edge("output", END)
-    
-    return builder.compile(checkpointer=checkpointer)
-
-graph = build_agent()
+graph = builder.compile(checkpointer=checkpointer)
 
 
 def invoke(question, **kwargs):
