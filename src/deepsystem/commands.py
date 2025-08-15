@@ -1,5 +1,6 @@
 import click
 from question import invoke as invoke_question
+from sessions import clean_current_session
 
 
 
@@ -7,3 +8,8 @@ from question import invoke as invoke_question
 @click.argument('question')
 def question(question):
     invoke_question(question)
+
+
+@click.command(help='Clean chat session of the current working directory')
+def clean():
+    clean_current_session()

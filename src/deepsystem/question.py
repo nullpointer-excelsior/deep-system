@@ -1,5 +1,4 @@
 from system import system_summary
-from config import config
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.chat_models import init_chat_model
 from typing import Sequence
@@ -7,8 +6,8 @@ from langchain_core.messages import HumanMessage, BaseMessage, AIMessage
 from langgraph.graph.message import add_messages
 from langgraph.graph import START, END, StateGraph
 from typing_extensions import Annotated, TypedDict
-import sqlite3
-from langgraph.checkpoint.sqlite import SqliteSaver
+from persistence import create_checkpointer
+
 
 system_prompt = """
 Eres un asistente especializado en sistemas operativos Linux, Bash scripting, programación en general, DevOps, y seguridad informática ofensiva y defensiva, así como en mejores prácticas en administración de sistemas y DevOps.
@@ -29,7 +28,6 @@ prompt_template = ChatPromptTemplate([
     ("system", system_prompt),
     MessagesPlaceholder("messages")
 ])
-
 
 llm = init_chat_model("gpt-4.1-nano-2025-04-14", model_provider="openai")
 
@@ -71,7 +69,6 @@ def model_call_node(state: State) -> State:
     for chunk in question_model.stream(state):
         print(chunk.content, end="", flush=True)
         answer += chunk.content
-    # answer = question_model.invoke(state).content
     return {
         "messages": AIMessage(content=answer)
     }
@@ -83,11 +80,10 @@ def output_node(state: State) -> OutputState:
     }
 
 
+
 def build_agent():
 
-    conn = sqlite3.connect(config.database_path, check_same_thread=False)
-    checkpointer = SqliteSaver(conn)
-
+    checkpointer = create_checkpointer()
     builder = StateGraph(state_schema=State, input_schema=InputState, output_schema=OutputState)
     
     builder.add_node("system_summary", system_summary_node)
@@ -105,7 +101,7 @@ graph = build_agent()
 
 def invoke(question, **kwargs):
     graph_config = {"configurable": {"thread_id": system_summary.cwd }}
-    res = graph.invoke(
+    graph.invoke(
         {"question": question},
         graph_config
     )

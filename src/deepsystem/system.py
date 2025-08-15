@@ -1,4 +1,3 @@
-from config import config
 from dataclasses import dataclass
 import platform
 import os 

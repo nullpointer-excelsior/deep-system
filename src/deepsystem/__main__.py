@@ -1,5 +1,5 @@
 import click
-from commands import question
+from commands import question, clean
 
 
 @click.group(help='OS Agent system')
@@ -9,5 +9,6 @@ def cli(model):
 
 
 cli.add_command(question)
+cli.add_command(clean)
 
 cli()
