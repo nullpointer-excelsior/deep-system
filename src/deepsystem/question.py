@@ -1,4 +1,5 @@
 from system import system_summary
+from config import get_configuration
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.chat_models import init_chat_model
 from typing import Sequence
@@ -29,13 +30,10 @@ prompt_template = ChatPromptTemplate([
     MessagesPlaceholder("messages")
 ])
 
-llm = init_chat_model("gpt-4.1-nano-2025-04-14", model_provider="openai")
+deepsystem_config = get_configuration()
+llm = init_chat_model(f"openai:{deepsystem_config.model}")
 
 question_model = prompt_template | llm
-
-messages = [
-    HumanMessage(content="como instalo bat")
-]
 
 
 class Options(TypedDict):
@@ -65,10 +63,11 @@ def system_summary_node(state: InputState) -> State:
 
 
 def model_call_node(state: State) -> State:
-    answer = ''
-    for chunk in question_model.stream(state):
-        print(chunk.content, end="", flush=True)
-        answer += chunk.content
+    # answer = ''
+    # for chunk in question_model.stream(state):
+    #     print(chunk.content, end="", flush=True)
+    #     answer += chunk.content
+    answer = question_model.invoke(state).content
     return {
         "messages": AIMessage(content=answer)
     }
@@ -100,8 +99,12 @@ graph = build_agent()
 
 
 def invoke(question, **kwargs):
-    graph_config = {"configurable": {"thread_id": system_summary.cwd }}
-    graph.invoke(
-        {"question": question},
-        graph_config
-    )
+    config = {
+        "configurable": {
+            "thread_id": system_summary.cwd 
+        }
+    }
+    input = { 
+        "question": question 
+    }
+    return graph.invoke(input, config)
