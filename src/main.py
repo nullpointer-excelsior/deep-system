@@ -13,8 +13,3 @@ cli.add_command(model)
 
 cli()
 
-
-
-
-# for x in history.get_code_snippets(history.find_message_content()):
-#     print(x)

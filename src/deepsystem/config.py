@@ -2,6 +2,7 @@ import toml
 from pathlib import Path
 from typing import TypedDict, List
 from deepsystem.system import FzfCommand
+from deepsystem import ui
 
 CONFIG_DIR = Path.home() / '.config' / 'deepsystem'
 CONFIG_FILEPATH = CONFIG_DIR / 'config.toml'
@@ -68,11 +69,14 @@ def get_configuration() -> DeepSystemConfiguration:
 
 def update_ai_model():
     config = get_configuration()
-    selected = FzfCommand([]).input_values(config['ai']['model']['choices'])
+    model_choices = config['ai']['model']['choices']
+    selected = ui.select_model_ui(model_choices)
     if selected:
         config['ai']['model']['selected'] = selected
         with open(CONFIG_FILEPATH, 'w') as f:
             toml.dump(config, f)
+        return True
+    return False
 
 
 

@@ -41,5 +41,5 @@ def clean():
 
 @click.command(help='Update model based on configured choices')
 def model():
-    update_ai_model()
-    console.print("🚀 [bold green]Model updated [/bold green]")
+    if update_ai_model():
+        console.print("🚀 [bold green]Model updated [/bold green]")
