@@ -1,5 +1,5 @@
-from system import system_summary
-from config import get_configuration
+from deepsystem.system import system_summary
+from deepsystem.config import get_configuration
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.chat_models import init_chat_model
 from typing import Sequence
@@ -7,7 +7,7 @@ from langchain_core.messages import HumanMessage, BaseMessage, AIMessage
 from langgraph.graph.message import add_messages
 from langgraph.graph import START, END, StateGraph
 from typing_extensions import Annotated, TypedDict
-from persistence import create_checkpointer
+from deepsystem.persistence import create_checkpointer
 
 
 system_prompt = """

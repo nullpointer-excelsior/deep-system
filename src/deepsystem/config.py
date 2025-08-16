@@ -1,8 +1,7 @@
 import toml
 from pathlib import Path
-from dataclasses import dataclass, field
 from typing import TypedDict, List
-from system import FzfCommand
+from deepsystem.system import FzfCommand
 
 CONFIG_DIR = Path.home() / '.config' / 'deepsystem'
 CONFIG_FILEPATH = CONFIG_DIR / 'config.toml'

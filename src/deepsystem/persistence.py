@@ -1,5 +1,5 @@
 import sqlite3
-from config import get_configuration
+from deepsystem.config import get_configuration
 from langgraph.checkpoint.sqlite import SqliteSaver
 
 config = get_configuration()

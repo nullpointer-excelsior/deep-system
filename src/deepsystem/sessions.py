@@ -1,5 +1,5 @@
-from persistence import create_checkpointer
-from system import system_summary
+from deepsystem.persistence import create_checkpointer
+from deepsystem.system import system_summary
 
 
 def clean_current_session():
