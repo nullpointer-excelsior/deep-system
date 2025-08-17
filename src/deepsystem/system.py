@@ -39,7 +39,7 @@ class FzfCommand:
             return None
         return f"{directory}/{selected_file.strip()}" if not directory.endswith('/') else f"{directory}{selected_file.strip()}"
 
-    def input_content(self, content):
+    def input_content(self, content: str):
         commands = ['fzf']
         commands += self.options
         result = subprocess.run(
@@ -50,7 +50,7 @@ class FzfCommand:
         )
         return result.stdout.strip()
     
-    def input_values(self, values):
+    def input_values(self, values: list):
         return self.input_content('\n'.join(values))
 
 

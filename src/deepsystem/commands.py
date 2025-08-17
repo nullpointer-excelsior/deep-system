@@ -2,6 +2,7 @@ import click
 from deepsystem.question import invoke as invoke_question
 from deepsystem.config import update_ai_model, get_configuration
 from deepsystem.sessions import clean_current_session
+from deepsystem.history import select_code_snippet
 from rich.console import Console
 from rich.markdown import Markdown
 
@@ -29,9 +30,10 @@ def question(question):
 
 
 @click.command(help='Select code snippet from agent chat history')
-@click.option('-c', '--copy', help='Copy to clipboard the select code snippet ')
-def code_history(copy):
-    pass
+def code_history():
+    code = select_code_snippet()
+    if code is not None:
+        print(code)
 
 @click.command(help='Clean chat session of the current working directory')
 def clean():

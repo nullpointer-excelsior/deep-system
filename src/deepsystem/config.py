@@ -70,7 +70,7 @@ def get_configuration() -> DeepSystemConfiguration:
 def update_ai_model():
     config = get_configuration()
     model_choices = config['ai']['model']['choices']
-    selected = ui.select_model_ui(model_choices)
+    selected = ui.select_model(model_choices)
     if selected:
         config['ai']['model']['selected'] = selected
         with open(CONFIG_FILEPATH, 'w') as f:

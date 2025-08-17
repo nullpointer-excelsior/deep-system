@@ -2,6 +2,7 @@ from deepsystem.persistence import create_checkpointer
 from deepsystem.system import system_summary
 from operator import attrgetter
 import re
+from deepsystem import ui
 
 
 def find_message_content():
@@ -67,3 +68,6 @@ def get_code_snippets(contents):
     return snippets
 
 
+def select_code_snippet():
+    code_snippets = get_code_snippets(find_message_content())
+    return ui.select_code_snippet(code_snippets)
