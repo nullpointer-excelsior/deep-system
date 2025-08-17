@@ -5,6 +5,7 @@ from deepsystem.sessions import clean_current_session
 from deepsystem.history import select_code_snippet
 from rich.console import Console
 from rich.markdown import Markdown
+from rich.syntax import Syntax
 
 console = Console()
 configuration = get_configuration()
@@ -13,6 +14,13 @@ def display_markdown(content):
     print('')
     console.print(Markdown(content))
     print('')
+
+def display_code(code):
+    syntax = Syntax(code, "python", theme="monokai", line_numbers=False)
+    print('')
+    console.print(syntax)
+    print('')
+
 
 @click.command(help='Make a question with session based on the current working directory')
 @click.argument('question', required=False)
@@ -33,7 +41,7 @@ def question(question):
 def code_history():
     code = select_code_snippet()
     if code is not None:
-        print(code)
+        display_code(code)
 
 @click.command(help='Clean chat session of the current working directory')
 def clean():
