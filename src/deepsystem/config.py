@@ -1,7 +1,6 @@
 import toml
 from pathlib import Path
-from typing import TypedDict, List
-from deepsystem.system import FzfCommand
+from typing import TypedDict, List, Callable
 from deepsystem import ui
 
 CONFIG_DIR = Path.home() / '.config' / 'deepsystem'
@@ -28,12 +27,11 @@ class DeepSystemConfiguration(TypedDict):
     database: DatabaseConfig
 
 
-def get_configuration() -> DeepSystemConfiguration:
+def _load_configuration() -> DeepSystemConfiguration:
     """
     Loads configuration from a TOML file. If the file does not exist,
     it is created with a default configuration and then read.
     """
-
     # Ensure the config directory exists
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -67,17 +65,33 @@ def get_configuration() -> DeepSystemConfiguration:
     return config_data
 
 
+_config_instance = _load_configuration()
+
+
+def get_configuration() -> DeepSystemConfiguration:
+    return _config_instance
+
+
+def reduce_config(reducer_callback: Callable[[DeepSystemConfiguration], DeepSystemConfiguration]) -> DeepSystemConfiguration:
+    config_updated = reducer_callback(_config_instance)
+    with CONFIG_FILEPATH.open('w') as file:
+        toml.dump(config_updated, file)
+    return config_updated
+
+
 def update_ai_model():
-    config = get_configuration()
-    model_choices = config['ai']['model']['choices']
+    global _config_instance
+    
+    model_choices = _config_instance['ai']['model']['choices']
     selected = ui.select_model(model_choices)
+    
     if selected:
-        config['ai']['model']['selected'] = selected
-        with open(CONFIG_FILEPATH, 'w') as f:
-            toml.dump(config, f)
+        
+        def reducer(config: DeepSystemConfiguration):
+            config["ai"]['model']['selected'] = selected
+            return config
+        
+        _config_instance = reduce_config(reducer)
         return True
+    
     return False
-
-
-
-
