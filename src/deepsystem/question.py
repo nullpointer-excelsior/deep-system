@@ -1,8 +1,8 @@
-from deepsystem.system import system_summary
+from deepsystem.system import system_summary, markdownfiles
 from deepsystem.config import get_configuration
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.chat_models import init_chat_model
-from typing import Sequence
+from typing import Sequence, List
 from langchain_core.messages import HumanMessage, BaseMessage, AIMessage
 from langgraph.graph.message import add_messages
 from langgraph.graph import START, END, StateGraph
@@ -30,6 +30,12 @@ prompt_template = ChatPromptTemplate([
     MessagesPlaceholder("messages")
 ])
 
+filecontext_prompt = """
+En base a los siguientes archivos:
+{files}
+Response la siguiente pregunta: {question}
+"""
+
 config = get_configuration()
 model = config['ai']['model']['selected']
 
@@ -39,8 +45,7 @@ question_model = prompt_template | llm
 
 
 class Options(TypedDict):
-    copy: bool
-    copy_code: bool
+    contextfiles: List[str]
 
 
 class InputState(TypedDict):
@@ -57,18 +62,22 @@ class OutputState(TypedDict):
     answer: str
 
 
-def system_summary_node(state: InputState) -> State:
+def input_node(state: InputState) -> State:
+    contextfiles = state["options"]["contextfiles"]
+
+    if len(contextfiles) > 0:
+        markdown_files = markdownfiles(contextfiles)
+        content = filecontext_prompt.format(files=markdown_files, question=state["question"])
+    else:
+        content = state["question"]
+
     return {
-        "messages": [HumanMessage(content=state["question"])],
+        "messages": [HumanMessage(content=content)],
         "system_summary": system_summary.summary()
     }
 
 
 def model_call_node(state: State) -> State:
-    # answer = ''
-    # for chunk in question_model.stream(state):
-    #     print(chunk.content, end="", flush=True)
-    #     answer += chunk.content
     answer = question_model.invoke(state).content
     return {
         "messages": AIMessage(content=answer)
@@ -84,11 +93,11 @@ def output_node(state: State) -> OutputState:
 checkpointer = create_checkpointer()
 builder = StateGraph(state_schema=State, input_schema=InputState, output_schema=OutputState)
 
-builder.add_node("system_summary", system_summary_node)
+builder.add_node("input", input_node)
 builder.add_node("model_call", model_call_node)
 builder.add_node("output", output_node)
-builder.add_edge(START, "system_summary")
-builder.add_edge("system_summary", "model_call")
+builder.add_edge(START, "input")
+builder.add_edge("input", "model_call")
 builder.add_edge("model_call", "output")
 builder.add_edge("output", END)
 
@@ -101,7 +110,10 @@ def invoke(question, **kwargs):
             "thread_id": system_summary.cwd 
         }
     }
-    input = { 
-        "question": question 
+    input: InputState = { 
+        "question": question,
+        "options": {
+            "contextfiles": kwargs.get("contextfiles", [])
+        }
     }
     return graph.invoke(input, config)

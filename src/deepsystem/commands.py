@@ -24,7 +24,10 @@ def display_code(code):
 
 @click.command(help='Make a question with session based on the current working directory')
 @click.argument('question', required=False)
-def question(question):
+@click.option("-f", "--file", "files", type=click.Path(dir_okay=False), multiple=True, help="File to add to the context agent")
+def question(question, files):
+    
+    contextfiles = [f for f in files]
 
     if not question:
         question = click.prompt(click.style("💬 Enter your question", fg="yellow"), type=str)
@@ -32,7 +35,7 @@ def question(question):
     model = configuration['ai']['model']['selected']    
 
     with console.status(f"[bold green] 🦜 Thinking and hallucinating with {model}...[/]", spinner="dots"):
-        response = invoke_question(question)
+        response = invoke_question(question, contextfiles=contextfiles)
     
     display_markdown(response["answer"])
 
