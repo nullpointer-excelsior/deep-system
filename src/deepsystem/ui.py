@@ -48,3 +48,30 @@ def select_code_snippet(snippets: list) -> str:
     if selected:
         return Path(f"{tempdir}/{selected}").read_text()
     return None
+
+
+def select_files() -> str:
+    ignoredir=[
+        "build",
+        "test",
+        ".gradle",
+        "gradle",
+        ".idea",
+        "node_modules",
+        ".venv",
+        ".git",
+        "__pycache__",
+        "target",
+        ".pytest_cache"
+    ]
+
+    fzf = FzfCommand([
+        "--preview-window=right:70%:wrap", 
+        "--layout", "reverse",
+        "--preview", f"bat --style=numbers --color=always {{}}",
+        f"--walker-skip={",".join(ignoredir)}"
+    ])
+    selected = fzf.select_file()
+    if selected:
+        return selected
+    return None
