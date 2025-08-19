@@ -1,7 +1,7 @@
 import click
 from deepsystem.question import invoke as invoke_question
 from deepsystem.config import update_ai_model, get_configuration
-from deepsystem.sessions import clean_current_session
+from deepsystem import sessions
 from deepsystem.history import select_code_snippet
 from deepsystem import ui
 from rich.console import Console
@@ -25,17 +25,22 @@ def display_code(code):
 
 @click.command(help='Make a question with session based on the current working directory')
 @click.argument('question', required=False)
-@click.option("-f", "--file", "files", type=click.Path(dir_okay=False), multiple=True, help="File to add to the context agent")
-@click.option("-s", "--select-file", "selectfile", is_flag=True, help="Select a file with fzf to ask a question about this file")
-def question(question, files, selectfile):
+@click.option("-s", "--select-file", "selectfile", count=True, help="Select a file with fzf to ask a question about this file. you can pass a multiple files using -sss ") # TODO: Using the count option might enable selecting multiple files
+@click.option("-c", "--from-clipboard", "fromclipboard", type=(), help="Add clipboard content to question. you can use '@clipboard' to refer the copied content.")
+def question(question, selectfile, fromclipboard):
     
-    contextfiles = [f for f in files]
-    
-    if selectfile and (fileselected := ui.select_files()):
-        contextfiles.append(fileselected)
+    contextfiles = []
+
+    for _ in range(selectfile):
+        if fileselected := ui.select_files():
+            contextfiles.append(fileselected)
+
+    if contextfiles:
+        console.print("\n[bold]📝 Context files added:[/]")
+        console.print("\n".join(f"[grey42]- {f}[/]" for f in contextfiles))
 
     if not question:
-        question = click.prompt(click.style("💬 Enter your question", fg="yellow"), type=str)
+        question = click.prompt(click.style("\n💬 Enter your question", fg="yellow"), type=str)
 
     model = configuration['ai']['model']['selected']    
 
@@ -54,7 +59,7 @@ def code_history():
 
 @click.command(help='Clean chat session of the current working directory')
 def clean():
-    clean_current_session()  
+    sessions.clean_current_session()  
     console.print("🧹 [bold green]Session cleaned [/bold green]")
 
 
