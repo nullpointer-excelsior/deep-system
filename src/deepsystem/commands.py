@@ -4,6 +4,7 @@ from deepsystem.config import update_ai_model, get_configuration
 from deepsystem import sessions
 from deepsystem.history import select_code_snippet
 from deepsystem import ui
+import pyperclip 
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.syntax import Syntax
@@ -25,8 +26,8 @@ def display_code(code):
 
 @click.command(help='Make a question with session based on the current working directory')
 @click.argument('question', required=False)
-@click.option("-s", "--select-file", "selectfile", count=True, help="Select a file with fzf to ask a question about this file. you can pass a multiple files using -sss ") # TODO: Using the count option might enable selecting multiple files
-@click.option("-c", "--from-clipboard", "fromclipboard", type=(), help="Add clipboard content to question. you can use '@clipboard' to refer the copied content.")
+@click.option("-s", "--select-file", "selectfile", count=True, help="Select a file with fzf to ask a question about this file. you can pass a multiple files using the short option repeatedly eg: '-sss' select 3 files") # TODO: Using the count option might enable selecting multiple files
+@click.option("-c", "--from-clipboard", "fromclipboard", is_flag=True, help="Add clipboard content to question. you can use '@clipboard' to refer the copied content.")
 def question(question, selectfile, fromclipboard):
     
     contextfiles = []
@@ -39,13 +40,15 @@ def question(question, selectfile, fromclipboard):
         console.print("\n[bold]📝 Context files added:[/]")
         console.print("\n".join(f"[grey42]- {f}[/]" for f in contextfiles))
 
+    clipboard_content = pyperclip.paste() if fromclipboard else None
+
     if not question:
         question = click.prompt(click.style("\n💬 Enter your question", fg="yellow"), type=str)
 
     model = configuration['ai']['model']['selected']    
 
     with console.status(f"[bold green] 🦜 Thinking and hallucinating with {model}...[/]", spinner="dots"):
-        response = invoke_question(question, contextfiles=contextfiles)
+        response = invoke_question(question, contextfiles=contextfiles, clipboard=clipboard_content)
     
     display_markdown(response["answer"])
 

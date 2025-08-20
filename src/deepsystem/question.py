@@ -30,9 +30,12 @@ prompt_template = ChatPromptTemplate([
     MessagesPlaceholder("messages")
 ])
 
-filecontext_prompt = """
-En base a los siguientes archivos:
+filecontext_prompt="""
+## CONTEXTO
+En base al siguiente contenido:
+---
 {files}
+---
 Response la siguiente pregunta: {question}
 """
 
@@ -46,6 +49,7 @@ question_model = prompt_template | llm
 
 class Options(TypedDict):
     contextfiles: List[str]
+    clipboard: str
 
 
 class InputState(TypedDict):
@@ -64,8 +68,11 @@ class OutputState(TypedDict):
 
 def input_node(state: InputState) -> State:
     contextfiles = state["options"]["contextfiles"]
+    clipboard = state["options"]["clipboard"]
+    if clipboard:
+        contextfiles.append(f"\n{clipboard}\n")
 
-    if len(contextfiles) > 0:
+    if contextfiles:
         markdown_files = markdownfiles(contextfiles)
         content = filecontext_prompt.format(files=markdown_files, question=state["question"])
     else:
@@ -105,6 +112,7 @@ graph = builder.compile(checkpointer=checkpointer)
 
 
 def invoke(question, **kwargs):
+
     config = {
         "configurable": {
             "thread_id": system_summary.cwd 
@@ -113,7 +121,9 @@ def invoke(question, **kwargs):
     input: InputState = { 
         "question": question,
         "options": {
-            "contextfiles": kwargs.get("contextfiles", [])
+            "contextfiles": kwargs.get("contextfiles", []),
+            "clipboard": kwargs.get("clipboard", None)
         }
     }
+    print(input)
     return graph.invoke(input, config)
