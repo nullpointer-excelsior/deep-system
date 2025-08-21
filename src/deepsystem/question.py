@@ -125,5 +125,4 @@ def invoke(question, **kwargs):
             "clipboard": kwargs.get("clipboard", None)
         }
     }
-    print(input)
     return graph.invoke(input, config)

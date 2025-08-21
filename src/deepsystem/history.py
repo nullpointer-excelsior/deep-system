@@ -6,15 +6,14 @@ from deepsystem import ui
 
 
 def find_message_content():
-    thread_id = system_summary.cwd
     config = {
         "configurable": {
-            "thread_id": thread_id 
+            "thread_id": system_summary.cwd
         }
     }
-    checkpoint = create_checkpointer()
-    messages = checkpoint.get(config)["channel_values"]["messages"]
-    return list(map(lambda msg: msg.content, messages))
+    data = create_checkpointer().get(config) or {}
+    messages = data.get("channel_values", {}).get("messages", [])
+    return [msg.content for msg in messages]
 
 
 def extract_code_snippets(markdown_content: str):
@@ -70,4 +69,6 @@ def get_code_snippets(contents):
 
 def select_code_snippet():
     code_snippets = get_code_snippets(find_message_content())
-    return ui.select_code_snippet(code_snippets)
+    if code_snippets:
+        return ui.select_code_snippet(code_snippets)
+    return None

@@ -58,6 +58,8 @@ def code_history():
     code = select_code_snippet()
     if code is not None:
         display_code(code)
+    else:
+        console.print("🚫 Snippets not found")
 
 
 @click.command(help='Clean chat session of the current working directory')
