@@ -112,7 +112,6 @@ graph = builder.compile(checkpointer=checkpointer)
 
 
 def invoke(question, **kwargs):
-
     config = {
         "configurable": {
             "thread_id": system_summary.cwd 

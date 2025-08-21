@@ -55,8 +55,7 @@ def question(question, selectfile, fromclipboard):
 
 @click.command(help='Select code snippet from agent chat history')
 def code_history():
-    code = select_code_snippet()
-    if code is not None:
+    if code := select_code_snippet():
         display_code(code)
     else:
         console.print("🚫 Snippets not found")
