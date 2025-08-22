@@ -27,7 +27,7 @@ def display_code(code):
 @click.command(help='Make a question with session based on the current working directory')
 @click.argument('question', required=False)
 @click.option("-s", "--select-file", "selectfile", count=True, help="Select a file with fzf to ask a question about this file. you can pass a multiple files using the short option repeatedly eg: '-sss' select 3 files") # TODO: Using the count option might enable selecting multiple files
-@click.option("-c", "--from-clipboard", "fromclipboard", is_flag=True, help="Add clipboard content to question. you can use '@clipboard' to refer the copied content.")
+@click.option("-c", "--from-clipboard", "fromclipboard", is_flag=True, help="Add clipboard content to question.")
 def question(question, selectfile, fromclipboard):
     
     contextfiles = []
