@@ -113,6 +113,11 @@ class DirectoryContentRepository:
         raise ValueError(f"Path '{pathname}' is neither a file nor a directory.")
 
 
+def execute_lastcommand():                                                                                                                                                                                                                                                                                                                              
+    res = subprocess.run(["bash", "-lc", "ls /nope"], capture_output=True, text=True)                                                                                                                                                                                                                                             
+    print(res.stderr)                                                                                                                                                                                                                                                                                                             
+
+
 
 
 system_summary = get_system_summary()
