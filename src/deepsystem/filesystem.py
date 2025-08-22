@@ -29,3 +29,18 @@ def create_temporal_snippets(snippets: List[Dict[str, str]]) -> Tuple[str, List[
         created_files.append(file_name)
 
     return temp_dir, created_files
+
+
+def convert_files_to_markdown(filenames: list) -> str:
+    markdown_content = "\n"
+    for file_path in filenames:
+        file_name = os.path.basename(file_path)
+        markdown_content += f"**{file_name}**\n"
+        try:
+            with open(file_path, 'r') as file:
+                content = file.read()
+                extension = os.path.splitext(file_name)[1][1:]
+                markdown_content += f"```{extension}\n{content}\n```\n"
+        except Exception as e:
+            markdown_content += f"Error reading file: {e}\n"
+    return markdown_content

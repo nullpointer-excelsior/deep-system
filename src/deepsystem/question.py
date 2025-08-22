@@ -1,5 +1,6 @@
-from deepsystem.system import system_summary, markdownfiles
+from deepsystem.system import system_summary
 from deepsystem.config import get_configuration
+from deepsystem.filesystem import convert_files_to_markdown
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.chat_models import init_chat_model
 from typing import Sequence, List
@@ -73,7 +74,7 @@ def input_node(state: InputState) -> State:
         contextfiles.append(f"\n{clipboard}\n")
 
     if contextfiles:
-        markdown_files = markdownfiles(contextfiles)
+        markdown_files = convert_files_to_markdown(contextfiles)
         content = filecontext_prompt.format(files=markdown_files, question=state["question"])
     else:
         content = state["question"]

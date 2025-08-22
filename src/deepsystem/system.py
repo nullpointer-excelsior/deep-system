@@ -81,21 +81,6 @@ def get_system_summary() -> SystemSummary:
     )
 
 
-def markdownfiles(filepaths):
-    markdown_content = "\n"
-    for file_path in filepaths:
-        file_name = os.path.basename(file_path)
-        markdown_content += f"**{file_name}**\n"
-        try:
-            with open(file_path, 'r') as file:
-                content = file.read()
-                extension = os.path.splitext(file_name)[1][1:]
-                markdown_content += f"```{extension}\n{content}\n```\n"
-        except Exception as e:
-            markdown_content += f"Error reading file: {e}\n"
-    return markdown_content
-
-
 class DirectoryContentRepository:
 
     @staticmethod
@@ -112,12 +97,6 @@ class DirectoryContentRepository:
 
         raise ValueError(f"Path '{pathname}' is neither a file nor a directory.")
 
-
-def execute_lastcommand():                                                                                                                                                                                                                                                                                                                              
-    res = subprocess.run(["bash", "-lc", "ls /nope"], capture_output=True, text=True)                                                                                                                                                                                                                                             
-    print(res.stderr)                                                                                                                                                                                                                                                                                                             
-
-
-
+                                                                                                                                                                                                                                                                                            
 
 system_summary = get_system_summary()
