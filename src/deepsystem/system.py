@@ -96,4 +96,23 @@ def markdownfiles(filepaths):
     return markdown_content
 
 
+class DirectoryContentRepository:
+
+    @staticmethod
+    def read(pathname: str) -> str:
+        if not os.path.exists(pathname):
+            raise FileNotFoundError(f"Path '{pathname}' does not exist.")
+
+        if os.path.isfile(pathname):
+            with open(pathname, "r", encoding="utf-8") as file:
+                return file.read()
+
+        if os.path.isdir(pathname):
+            return "\n".join(os.listdir(pathname))
+
+        raise ValueError(f"Path '{pathname}' is neither a file nor a directory.")
+
+
+
+
 system_summary = get_system_summary()
