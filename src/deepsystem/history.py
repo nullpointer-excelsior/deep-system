@@ -60,15 +60,13 @@ def extract_code_snippets(markdown_content: str):
     return snippets
 
 
-def get_code_snippets(contents):
+def _get_code_snippets(contents):
     snippets = []
     for content in contents:
         snippets.extend(extract_code_snippets(content))
     return snippets
 
 
-def select_code_snippet():
-    code_snippets = get_code_snippets(find_message_content())
-    if code_snippets:
-        return ui.select_code_snippet(code_snippets)
-    return None
+def get_code_snippets():
+    return _get_code_snippets(find_message_content())
+

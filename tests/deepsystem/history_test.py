@@ -61,5 +61,5 @@ def test_extract_code_snippets(markdown, expected):
     ],
 )
 def test_get_code_snippets(contents, expected_exts):
-    result = history.get_code_snippets(contents)
+    result = history._get_code_snippets(contents)
     assert [item["ext"] for item in result] == expected_exts
