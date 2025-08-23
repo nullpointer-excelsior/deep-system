@@ -1,7 +1,6 @@
 import toml
 from pathlib import Path
 from typing import TypedDict, List, Callable
-from deepsystem import ui
 
 CONFIG_DIR = Path.home() / '.config' / 'deepsystem'
 CONFIG_FILEPATH = CONFIG_DIR / 'config.toml'
@@ -79,19 +78,23 @@ def reduce_config(reducer_callback: Callable[[DeepSystemConfiguration], DeepSyst
     return config_updated
 
 
-def update_ai_model():
+def update_config(config):
     global _config_instance
-    
-    model_choices = _config_instance['ai']['model']['choices']
-    selected = ui.select_model(model_choices)
-    
-    if selected:
-        
-        def reducer(config: DeepSystemConfiguration):
-            config["ai"]['model']['selected'] = selected
-            return config
-        
-        _config_instance = reduce_config(reducer)
-        return True
-    
-    return False
+    with CONFIG_FILEPATH.open('w') as file:
+        toml.dump(config, file)
+        _config_instance = config
+
+
+def update_ai_model(model):                                                                                                                                                                                                                                                 
+    global _config_instance                                                                                                                                                                                                                                                 
+                                                                                                                                                                                                                                                                       
+    try:                                                                                                                                                                                                                                                                    
+        if model in _config_instance['ai']['model']['choices']:  
+            _config_instance['ai']['model']['selected'] = model                                                                                                                                                                                                                                                         
+            update_config(_config_instance)                                                                                                                                                                                                                                            
+    except Exception as e:                                                                                                                                                                                                                                                  
+        print(str(e))                                                                                                                                                                                                                               
+        return False                                                                                                                                                                                                                                                        
+    return True                                                                                                                                                                                                                                                     
+
+

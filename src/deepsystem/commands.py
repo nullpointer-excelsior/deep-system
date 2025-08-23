@@ -73,5 +73,10 @@ def clean():
 
 @click.command(help='Update model based on configured choices')
 def model():
-    if update_ai_model():
-        console.print("🚀 [bold green]Model updated [/bold green]")
+    
+    config = get_configuration()
+    modeloptions = config["ai"]["model"]["choices"]
+    
+    if selected := ui.select_options(modeloptions):
+        update_ai_model(selected)
+        console.print("🚀 [bold green]Model updated [/bold green]") 

@@ -1,12 +1,11 @@
 from deepsystem.system import FzfCommand
 from pathlib import Path
-from typing import List, Dict
 from deepsystem import filesystem 
 
 
 
-def select_model(models):
-    return FzfCommand(['--layout', 'reverse']).input_values(models)
+def select_options(options):
+    return FzfCommand(['--layout', 'reverse']).input_values(options)
 
 
 def select_code_snippet(snippets: list) -> str:
