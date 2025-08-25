@@ -2,7 +2,7 @@ import click
 from deepsystem.question import invoke as invoke_question
 from deepsystem.config import update_ai_model, get_configuration
 from deepsystem import sessions
-from deepsystem.history import get_code_snippets
+from deepsystem.history import get_code_snippets, find_messages
 from deepsystem import ui
 import pyperclip 
 from rich.console import Console
@@ -53,17 +53,36 @@ def question(question, selectfile, fromclipboard):
     display_markdown(response["answer"])
 
 
-@click.command(help='Select code snippet from agent chat history')
-def code_history():
 
+import click                                                                                                                                                                                                                                                                
+                                                                                                                                                                                                                                                                            
+@click.group()                                                                                                                                                                                                                                                              
+def history():                                                                                                                                                                                                                                                              
+    """History related commands"""                                                                                                                                                                                                                                          
+    pass                                                                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                                            
+@history.command(help="Show message history")                                                                                                                                                                                                                                                          
+def messages():                                                                                                                                                                                                                                                             
+    message_icons = {
+        "ai": "🤖 AI:",
+        "human": "🐵 User:"
+    }
+    for message in find_messages():
+        console.print(message_icons.get(message.type, "👤 Unknown:"))
+        display_markdown(message.content)
+
+
+
+@history.command(help="Show code snippets from history")                                                                                                                                                                                                                                                          
+def code():    
     snippets = get_code_snippets()
     if not snippets:
         console.print("🚫 Snippets not found")
         return
 
     if code := ui.select_code_snippet(snippets):
-        display_code(code)
-
+        display_code(code)                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                                            
 
 @click.command(help='Clean chat session of the current working directory')
 def clean():

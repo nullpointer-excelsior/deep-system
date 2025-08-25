@@ -16,6 +16,15 @@ def find_message_content():
     return [msg.content for msg in messages]
 
 
+def find_messages():
+    config = {
+        "configurable": {
+            "thread_id": system_summary.cwd
+        }
+    }
+    data = create_checkpointer().get(config) or {}
+    return data.get("channel_values", {}).get("messages", [])
+
 def extract_code_snippets(markdown_content: str):
     """
     Extracts all code snippets from a markdown string and returns them with their respective file extensions.
