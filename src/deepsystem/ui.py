@@ -1,7 +1,24 @@
 from deepsystem.system import FzfCommand
 from pathlib import Path
 from deepsystem import filesystem 
+from rich.console import Console
+from rich.markdown import Markdown
+from rich.syntax import Syntax
 
+console = Console()
+
+
+def display_markdown(content):
+    print('')
+    console.print(Markdown(content))
+    print('')
+
+
+def display_code(code):
+    syntax = Syntax(code, "python", theme="monokai", line_numbers=False)
+    print('')
+    console.print(syntax)
+    print('')
 
 
 def select_options(options):

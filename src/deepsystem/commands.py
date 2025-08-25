@@ -6,22 +6,10 @@ from deepsystem.history import get_code_snippets, find_messages
 from deepsystem import ui
 import pyperclip 
 from rich.console import Console
-from rich.markdown import Markdown
-from rich.syntax import Syntax
+
 
 console = Console()
 configuration = get_configuration()
-
-def display_markdown(content):
-    print('')
-    console.print(Markdown(content))
-    print('')
-
-def display_code(code):
-    syntax = Syntax(code, "python", theme="monokai", line_numbers=False)
-    print('')
-    console.print(syntax)
-    print('')
 
 
 @click.command(help='Make a question with session based on the current working directory')
@@ -50,7 +38,7 @@ def question(question, selectfile, fromclipboard):
     with console.status(f"[bold green] 🦜 Thinking and hallucinating with {model}...[/]", spinner="dots"):
         response = invoke_question(question, contextfiles=contextfiles, clipboard=clipboard_content)
     
-    display_markdown(response["answer"])
+    ui.display_markdown(response["answer"])
 
 
 
@@ -69,7 +57,7 @@ def messages():
     }
     for message in find_messages():
         console.print(message_icons.get(message.type, "👤 Unknown:"))
-        display_markdown(message.content)
+        ui.display_markdown(message.content)
 
 
 
@@ -81,7 +69,7 @@ def code():
         return
 
     if code := ui.select_code_snippet(snippets):
-        display_code(code)                                                                                                                                                                                                                    
+        ui.display_code(code)                                                                                                                                                                                                                    
                                                                                                                                                                                                                                                                             
 
 @click.command(help='Clean chat session of the current working directory')
