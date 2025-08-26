@@ -5,11 +5,7 @@ from deepsystem import history
 
 
 @patch("deepsystem.history.create_checkpointer")
-@patch("deepsystem.history.system_summary")
-def test_find_message_content(mock_system_summary, mock_create_checkpointer):
-    # Mock system_summary.cwd
-    mock_system_summary.cwd = "thread-123"
-
+def test_find_message_content(mock_create_checkpointer):
     # Mock checkpointer
     mock_checkpoint_instance = MagicMock()
     mock_checkpoint_instance.get.return_value = {
@@ -22,7 +18,7 @@ def test_find_message_content(mock_system_summary, mock_create_checkpointer):
     }
     mock_create_checkpointer.return_value = mock_checkpoint_instance
 
-    result = history.find_message_content()
+    result = history.find_message_content_by_thread_id("thread-123")
     assert result == ["Hello", "World"]
 
     mock_create_checkpointer.assert_called_once()

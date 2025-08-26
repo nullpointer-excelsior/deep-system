@@ -1,8 +1,9 @@
 import click
 from deepsystem.question import invoke as invoke_question
 from deepsystem.config import update_ai_model, get_configuration
+from deepsystem.system import system_summary
 from deepsystem import sessions
-from deepsystem.history import get_code_snippets, find_messages
+from deepsystem.history import find_messages_by_thread_id, get_code_snippets_by_thread_id
 from deepsystem import ui
 import pyperclip 
 from rich.console import Console
@@ -12,11 +13,18 @@ console = Console()
 configuration = get_configuration()
 
 
+def session_option():
+    def decorator(wrapper_fn):
+        return click.option("-s", "--session", "session", help="Set a session name for the conversation.")(wrapper_fn)
+    return decorator
+
+
 @click.command(help='Make a question with session based on the current working directory')
 @click.argument('question', required=False)
-@click.option("-s", "--select-file", "selectfile", count=True, help="Select a file with fzf to ask a question about this file. you can pass a multiple files using the short option repeatedly eg: '-sss' select 3 files") # TODO: Using the count option might enable selecting multiple files
+@click.option("-f", "--select-file", "selectfile", count=True, help="Select a file with fzf to ask a question about this file. you can pass a multiple files using the short option repeatedly eg: '-sss' select 3 files") # TODO: Using the count option might enable selecting multiple files
 @click.option("-c", "--from-clipboard", "fromclipboard", is_flag=True, help="Add clipboard content to question.")
-def question(question, selectfile, fromclipboard):
+@session_option()
+def question(question, selectfile, fromclipboard, session):
     
     contextfiles = []
 
@@ -36,7 +44,7 @@ def question(question, selectfile, fromclipboard):
     model = configuration['ai']['model']['selected']    
 
     with console.status(f"[bold green] 🦜 Thinking and hallucinating with {model}...[/]", spinner="dots"):
-        response = invoke_question(question, contextfiles=contextfiles, clipboard=clipboard_content)
+        response = invoke_question(question, contextfiles=contextfiles, clipboard=clipboard_content, session=session)
     
     ui.display_markdown(response["answer"])
 
@@ -49,21 +57,25 @@ def history():
     """History related commands"""                                                                                                                                                                                                                                          
     pass                                                                                                                                                                                                                                                                    
                                                                                                                                                                                                                                                                             
-@history.command(help="Show message history")                                                                                                                                                                                                                                                          
-def messages():                                                                                                                                                                                                                                                             
+@history.command(help="Show message history")   
+@session_option()                                                                                                                                                                                                                                                       
+def messages(session):                                                                                                                                                                                                                                                             
     message_icons = {
         "ai": "🤖 AI:",
         "human": "🐵 User:"
     }
-    for message in find_messages():
+    thread_id = session if session else system_summary.cwd
+    for message in find_messages_by_thread_id(thread_id):
         console.print(message_icons.get(message.type, "👤 Unknown:"))
         ui.display_markdown(message.content)
 
 
 
-@history.command(help="Show code snippets from history")                                                                                                                                                                                                                                                          
-def code():    
-    snippets = get_code_snippets()
+@history.command(help="Show code snippets from history")  
+@session_option()                                                                                                                                                                                                                                                        
+def code(session):    
+    thread_id = session if session else system_summary.cwd
+    snippets = get_code_snippets_by_thread_id(thread_id)
     if not snippets:
         console.print("🚫 Snippets not found")
         return
@@ -72,9 +84,11 @@ def code():
         ui.display_code(code)                                                                                                                                                                                                                    
                                                                                                                                                                                                                                                                             
 
-@click.command(help='Clean chat session of the current working directory')
-def clean():
-    sessions.clean_current_session()  
+@click.command(help='Clean chat session')
+@session_option()
+def clean(session):
+    thread_id = session if session else system_summary.cwd
+    sessions.clean_session_by_thread_id(thread_id)  
     console.print("🧹 [bold green]Session cleaned [/bold green]")
 
 

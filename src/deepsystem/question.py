@@ -113,9 +113,11 @@ graph = builder.compile(checkpointer=checkpointer)
 
 
 def invoke(question, **kwargs):
+    session_name = kwargs.get("session", None)
+    thread_id = session_name if session_name else system_summary.cwd
     config = {
         "configurable": {
-            "thread_id": system_summary.cwd 
+            "thread_id": thread_id 
         }
     }
     input: InputState = { 

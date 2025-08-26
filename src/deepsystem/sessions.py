@@ -6,3 +6,7 @@ def clean_current_session():
     thread_id = system_summary.cwd
     checkpoint = create_checkpointer()
     checkpoint.delete_thread(thread_id)
+
+def clean_session_by_thread_id(id):
+    checkpoint = create_checkpointer()
+    checkpoint.delete_thread(id)

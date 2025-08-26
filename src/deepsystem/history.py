@@ -1,14 +1,11 @@
 from deepsystem.persistence import create_checkpointer
-from deepsystem.system import system_summary
-from operator import attrgetter
 import re
-from deepsystem import ui
 
 
-def find_message_content():
+def find_message_content_by_thread_id(id):
     config = {
         "configurable": {
-            "thread_id": system_summary.cwd
+            "thread_id": id
         }
     }
     data = create_checkpointer().get(config) or {}
@@ -16,14 +13,15 @@ def find_message_content():
     return [msg.content for msg in messages]
 
 
-def find_messages():
+def find_messages_by_thread_id(id):
     config = {
         "configurable": {
-            "thread_id": system_summary.cwd
+            "thread_id": id
         }
     }
     data = create_checkpointer().get(config) or {}
     return data.get("channel_values", {}).get("messages", [])
+
 
 def extract_code_snippets(markdown_content: str):
     """
@@ -76,6 +74,6 @@ def _get_code_snippets(contents):
     return snippets
 
 
-def get_code_snippets():
-    return _get_code_snippets(find_message_content())
+def get_code_snippets_by_thread_id(id):
+    return _get_code_snippets(find_message_content_by_thread_id(id))
 
