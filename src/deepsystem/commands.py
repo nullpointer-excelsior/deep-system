@@ -21,7 +21,7 @@ def session_option():
 
 @click.command(help='Make a question with session based on the current working directory')
 @click.argument('question', required=False)
-@click.option("-f", "--select-file", "selectfile", count=True, help="Select a file with fzf to ask a question about this file. you can pass a multiple files using the short option repeatedly eg: '-sss' select 3 files") # TODO: Using the count option might enable selecting multiple files
+@click.option("-f", "--file", "selectfile", count=True, help="Select a file with fzf to ask a question about this file. you can pass a multiple files using the short option repeatedly eg: '-sss' select 3 files") # TODO: Using the count option might enable selecting multiple files
 @click.option("-c", "--from-clipboard", "fromclipboard", is_flag=True, help="Add clipboard content to question.")
 @session_option()
 def question(question, selectfile, fromclipboard, session):
@@ -48,9 +48,6 @@ def question(question, selectfile, fromclipboard, session):
     
     ui.display_markdown(response["answer"])
 
-
-
-import click                                                                                                                                                                                                                                                                
                                                                                                                                                                                                                                                                             
 @click.group()                                                                                                                                                                                                                                                              
 def history():                                                                                                                                                                                                                                                              
@@ -66,6 +63,9 @@ def messages(session):
     }
     thread_id = session if session else system_summary.cwd
     for message in find_messages_by_thread_id(thread_id):
+        if message.type == "human":
+            console.print(f"\n{message_icons.get('human')} [bold green]{message.content}[/bold green]\n")   
+            continue
         console.print(message_icons.get(message.type, "👤 Unknown:"))
         ui.display_markdown(message.content)
 
