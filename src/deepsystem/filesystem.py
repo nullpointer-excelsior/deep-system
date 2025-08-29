@@ -44,3 +44,13 @@ def convert_files_to_markdown(filenames: list) -> str:
         except Exception as e:
             markdown_content += f"Error reading file: {e}\n"
     return markdown_content
+
+
+def create_temp_file(content: str) -> str:
+    """
+    Creates a temporary text file with the given content and returns its path.
+    """
+    temp_dir = Path(tempfile.gettempdir())
+    temp_file_path = temp_dir / "temp_clipboard.txt"
+    temp_file_path.write_text(content, encoding="utf-8")
+    return str(temp_file_path)
