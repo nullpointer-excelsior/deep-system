@@ -2,7 +2,8 @@ from dataclasses import dataclass
 import platform
 import os 
 import subprocess
-from typing import List
+from typing import List, Dict
+from datetime import datetime
 
 
 def command_exists(command: str) -> bool:
@@ -67,7 +68,9 @@ class SystemSummary:
         - Kernel: {self.kernel}
         - Current Working Directory: {self.cwd}
         - Home Directory: {self.home}
+        - Current Time: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         """
+
 
 def get_system_summary() -> SystemSummary:
     system_name = platform.system()
