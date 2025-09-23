@@ -48,7 +48,37 @@ def question(question, selectfile, fromclipboard, session):
     
     ui.display_markdown(response["answer"])
 
-                                                                                                                                                                                                                                                                            
+@click.command(help='Chat without persistence history')
+@click.option("-f", "--file", "selectfile", count=True, help="Select a file with fzf to ask a question about this file. you can pass a multiple files using the short option repeatedly eg: '-sss' select 3 files") # TODO: Using the count option might enable selecting multiple files
+@click.option("-c", "--from-clipboard", "fromclipboard", is_flag=True, help="Add clipboard content to question.")
+def chat(selectfile, fromclipboard):
+    
+    contextfiles = []
+
+    for _ in range(selectfile):
+        if fileselected := ui.select_files():
+            contextfiles.append(fileselected)
+
+    if contextfiles:
+        console.print("\n[bold]📝 Context files added:[/]")
+        console.print("\n".join(f"[grey42]- {f}[/]" for f in contextfiles))
+
+    clipboard_content = pyperclip.paste() if fromclipboard else None
+
+    model = configuration['ai']['model']['selected']    
+    session_chat_id = "chat-session-1234"
+
+    while True:
+        user_input = click.prompt(click.style("\n🦁", fg="green"), type=str)
+        if user_input == 'exit':
+            break
+        with console.status(f"[bold green] 🦜 Thinking and hallucinating with {model}...[/]", spinner="dots"):
+            response = invoke_question(user_input, contextfiles=contextfiles, clipboard=clipboard_content, session=session_chat_id)
+        ui.display_markdown(response["answer"])
+    
+    sessions.clean_session_by_thread_id(session_chat_id)
+
+
 @click.group()                                                                                                                                                                                                                                                              
 def history():                                                                                                                                                                                                                                                              
     """History related commands"""                                                                                                                                                                                                                                          

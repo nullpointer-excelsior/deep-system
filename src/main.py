@@ -1,5 +1,5 @@
 import click
-from deepsystem.commands import question, clean, model, history
+from deepsystem.commands import question, clean, model, history, chat
 
 
 @click.group(help='OS Agent system')
@@ -11,6 +11,7 @@ cli.add_command(question)
 cli.add_command(clean)
 cli.add_command(model)
 cli.add_command(history)
+cli.add_command(chat)
 
 cli()
 
